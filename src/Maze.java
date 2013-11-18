@@ -82,10 +82,10 @@ public class Maze {
 	 * Adds walls adjacent to the given cell
 	 */
 	private void addWalls(Cell cell) {
-		cell.setWallLeft();
-		cell.setWallUp();
-		cell.setWallRight();
-		cell.setWallDown();
+		cell.setWall(Dir.Left);
+		cell.setWall(Dir.Up);
+		cell.setWall(Dir.Right);
+		cell.setWall(Dir.Down);
 	}
 	
 	/**
@@ -125,9 +125,6 @@ public class Maze {
 		 * Sets the cell as a passage if it will not create an intersection
 		 */
 		public boolean setPassage() {
-			if(maze[x][y].getVal() == 0) {
-				System.out.println("here");
-			}
 			maze[x][y].setVal(0);
 			lastCell = maze[x][y];
 			if(prev != null) openPrevious();
@@ -155,48 +152,29 @@ public class Maze {
 			passable[dir.ordinal()] = true;
 		}
 		
-		/**
-		 * Sets the cell to the left of this cell in the maze as a wall if it is unvisited
-		 */
-		public void setWallLeft() {
-			Cell cell = maze[x - 1][y];
-			cell.setPrev(Dir.Right);
-			if(cell.getVal() == -1) {
-				cell.setVal(1);
-				wallCells.add(cell);
+		public void setWall(Dir dir) {
+			Cell cell;
+			switch(dir) {
+			case Left:
+				cell = maze[x - 1][y];
+				cell.setPrev(Dir.Right);
+				break;
+			case Up:
+				cell = maze[x][y - 1];
+				cell.setPrev(Dir.Down);
+				break;
+			case Right:
+				cell = maze[x + 1][y];
+				cell.setPrev(Dir.Left);
+				break;
+			case Down:
+				cell = maze[x][y + 1];
+				cell.setPrev(Dir.Up);
+				break;
+			default:
+				return;
 			}
-		}
-		
-		/**
-		 * Sets the cell above this cell in the maze as a wall if it is unvisited
-		 */
-		public void setWallUp() {
-			Cell cell = maze[x][y - 1];
-			cell.setPrev(Dir.Down);
-			if(cell.getVal() == -1) {
-				cell.setVal(1);
-				wallCells.add(cell);
-			}
-		}
-		
-		/**
-		 * Sets the cell to the right of this cell in the maze as a wall if it is unvisited
-		 */
-		public void setWallRight() {
-			Cell cell = maze[x + 1][y];
-			cell.setPrev(Dir.Left);
-			if(cell.getVal() == -1) {
-				cell.setVal(1);
-				wallCells.add(cell);
-			}
-		}
-		
-		/**
-		 * Sets the cell below this cell in the maze as a wall if it is unvisited
-		 */
-		public void setWallDown() {
-			Cell cell = maze[x][y + 1];
-			cell.setPrev(Dir.Up);
+			
 			if(cell.getVal() == -1) {
 				cell.setVal(1);
 				wallCells.add(cell);

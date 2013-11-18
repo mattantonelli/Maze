@@ -22,16 +22,17 @@ public class Maze {
 	public Maze(int width, int height, int cellWidth, int cellHeight) {
 		this.cellWidth = cellWidth;
 		this.cellHeight = cellHeight;
+		
 		maze = new Cell[width][height];
 		
-		// Defaults all cell values to -1 to show they have not been visited
-		for(int col = 0; col < maze.length; col++) {
+		// Defaults all non-border cell values to -1 to show they have not been visited
+		for(int col = 1; col < maze.length - 1; col++) {
 			for(int row = 0; row < maze[0].length; row++) {
 				maze[col][row] = new Cell(col, row, -1);
 			}
 		}
 		
-		// Provides a single cell border which allows neater printing and prevents referencing out of bounds
+		// Provides a single cell border which prevents referencing out of bounds
 		for(int col = 0; col < maze.length; col++) {
 			for(int row = 0; row < maze[0].length; row += maze[0].length - 1) {
 				maze[col][row] = new Cell(col, row, -2);
@@ -59,9 +60,7 @@ public class Maze {
 	 */
 	public boolean expand() {
 		int randIndex = rand.nextInt(wallCells.size());
-		Cell randCell = wallCells.remove(randIndex);
-		
-		addPassage(randCell);
+		addPassage(wallCells.remove(randIndex));
 		
 		if(wallCells.isEmpty()) {
 			endCell = lastCell;
@@ -126,6 +125,9 @@ public class Maze {
 		 * Sets the cell as a passage if it will not create an intersection
 		 */
 		public boolean setPassage() {
+			if(maze[x][y].getVal() == 0) {
+				System.out.println("here");
+			}
 			maze[x][y].setVal(0);
 			lastCell = maze[x][y];
 			if(prev != null) openPrevious();
@@ -158,9 +160,9 @@ public class Maze {
 		 */
 		public void setWallLeft() {
 			Cell cell = maze[x - 1][y];
+			cell.setPrev(Dir.Right);
 			if(cell.getVal() == -1) {
 				cell.setVal(1);
-				cell.setPrev(Dir.Right);
 				wallCells.add(cell);
 			}
 		}
@@ -170,9 +172,9 @@ public class Maze {
 		 */
 		public void setWallUp() {
 			Cell cell = maze[x][y - 1];
+			cell.setPrev(Dir.Down);
 			if(cell.getVal() == -1) {
 				cell.setVal(1);
-				cell.setPrev(Dir.Down);
 				wallCells.add(cell);
 			}
 		}
@@ -182,9 +184,9 @@ public class Maze {
 		 */
 		public void setWallRight() {
 			Cell cell = maze[x + 1][y];
+			cell.setPrev(Dir.Left);
 			if(cell.getVal() == -1) {
 				cell.setVal(1);
-				cell.setPrev(Dir.Left);
 				wallCells.add(cell);
 			}
 		}
@@ -194,9 +196,9 @@ public class Maze {
 		 */
 		public void setWallDown() {
 			Cell cell = maze[x][y + 1];
+			cell.setPrev(Dir.Up);
 			if(cell.getVal() == -1) {
 				cell.setVal(1);
-				cell.setPrev(Dir.Up);
 				wallCells.add(cell);
 			}
 		}

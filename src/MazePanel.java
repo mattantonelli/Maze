@@ -12,8 +12,8 @@ public class MazePanel extends JPanel {
 
 	private static final long serialVersionUID = 1L;
 	
-	private static final int MaxWidth = 160, MaxHeight = 80, CellWidth = 8, CellHeight = CellWidth;
-	private boolean isGenerating, isSolving, quickGenerate = false;
+	private static final int MaxWidth = 150, MaxHeight = 80, CellWidth = 8, CellHeight = CellWidth;
+	private boolean isGenerating, isSolving, quickGenerate = true;
 	private Timer timer;
 	private Maze maze;
 	
@@ -41,15 +41,16 @@ public class MazePanel extends JPanel {
 		public void actionPerformed(ActionEvent e) {
 			if(isGenerating) {
 				if(quickGenerate) {
-					long startTime = System.currentTimeMillis();
+					long time = System.currentTimeMillis();
 					while(maze.expand());
 					isGenerating = false;
+					System.out.println((System.currentTimeMillis() - time) + "ms");
 					isSolving = true;
-					System.out.println("Generation time: " + 
-							(System.currentTimeMillis() - startTime) + "ms");
+					
 				} else {
 					if(!maze.expand()) {
 						isGenerating = false;
+						repaint();
 						isSolving = true;
 					}
 				}
@@ -68,6 +69,7 @@ public class MazePanel extends JPanel {
 		frame.add(new MazePanel());
 		frame.setSize(MaxWidth * CellWidth + 2 * CellWidth + 6, 
 				MaxHeight * CellHeight + 2 * CellHeight + 29);
+		frame.setTitle("Maze");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setLocationRelativeTo(null);
 		frame.setResizable(false);

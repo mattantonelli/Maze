@@ -1,21 +1,21 @@
+package com.tunabytes.maze;
 import java.awt.Color;
 import java.awt.Graphics;
-import java.util.ArrayList;
-import java.util.Random;
+import java.util.*;
 
 
 public class Maze {
 
 	private ArrayList<Cell> wallCells = new ArrayList<Cell>();
 	private Cell startCell, endCell = null, lastCell;
-	private Color startColor = new Color(36, 173, 222), endColor = new Color(138, 189, 0), 
-			lastColor = new Color(204, 0, 0), backgroundColor = new Color(63, 68, 71), 
+	private final Color startColor = new Color(36, 173, 222), endColor = new Color(138, 189, 0), 
+			lastColor = new Color(204, 0, 0), pathColor = new Color(179, 104, 217), 
 			borderColor = new Color(37, 40, 41);
 	private Random rand = new Random();
 	private Cell[][] maze;
-	private int cellWidth, cellHeight;
-	
-	private enum Dir {
+	private final int cellWidth, cellHeight;
+
+	public enum Dir {
 		Left, Up, Right, Down
 	}
 	
@@ -56,7 +56,7 @@ public class Maze {
 	/**
 	 * Generates a maze using Prim's Algorithm
 	 * 
-	 * @return true if maze is not fully expanded
+	 * @return true if the maze is fully expanded
 	 */
 	public boolean expand() {
 		int randIndex = rand.nextInt(wallCells.size());
@@ -67,7 +67,7 @@ public class Maze {
 			lastCell = null;
 		}
 		
-		return !wallCells.isEmpty();	// Done expanding when there are no more unchecked wall cells
+		return wallCells.isEmpty();	// Done expanding when there are no more unchecked wall cells
 	}
 	
 	/**
@@ -105,20 +105,33 @@ public class Maze {
 		}
 	}
 	
+	public Cell getStartCell() {
+		return startCell;
+	}
+
+	public Cell getEndCell() {
+		return endCell;
+	}
+	
 	/**
 	 * Holds a given location in the maze, allowing or easy manipulation of neighboring cells
 	 */
 	class Cell {
 		private final int x, y;
-		private final boolean[] passable = new boolean[]{false, false, false, false};	// Left, Up, Right, Down
+		private HashMap<Dir, Boolean> passable = new HashMap<Dir, Boolean>();
 		
 		private Dir prev;
+		private boolean inPath = false;
 		private int val;
 		
 		public Cell(int x, int y, int val) {
 			this.x = x;
 			this.y = y;
 			this.val = val;
+			passable.put(Dir.Left, false);
+			passable.put(Dir.Up, false);
+			passable.put(Dir.Right, false);
+			passable.put(Dir.Down, false);
 		}
 		
 		/**
@@ -135,40 +148,44 @@ public class Maze {
 			openPassage(prev);
 			switch(prev) {
 			case Left:
-				maze[x - 1][y].openPassage(Dir.Right);
+				openPassage(Dir.Left);
+				getNeighbor(Dir.Left).openPassage(Dir.Right);
 				break;
 			case Up:
-				maze[x][y - 1].openPassage(Dir.Down);
+				openPassage(Dir.Up);
+				getNeighbor(Dir.Up).openPassage(Dir.Down);
 				break;
 			case Right:
-				maze[x + 1][y].openPassage(Dir.Left);
+				openPassage(Dir.Right);
+				getNeighbor(Dir.Right).openPassage(Dir.Left);
 				break;
 			case Down:
-				maze[x][y + 1].openPassage(Dir.Up);
+				openPassage(Dir.Down);
+				getNeighbor(Dir.Down).openPassage(Dir.Up);
 			}
 		}
 		
 		public void openPassage(Dir dir) {
-			passable[dir.ordinal()] = true;
+			passable.put(dir, true);
 		}
 		
 		public void setWall(Dir dir) {
 			Cell cell;
 			switch(dir) {
 			case Left:
-				cell = maze[x - 1][y];
+				cell = getNeighbor(Dir.Left);
 				cell.setPrev(Dir.Right);
 				break;
 			case Up:
-				cell = maze[x][y - 1];
+				cell = getNeighbor(Dir.Up);
 				cell.setPrev(Dir.Down);
 				break;
 			case Right:
-				cell = maze[x + 1][y];
+				cell = getNeighbor(Dir.Right);
 				cell.setPrev(Dir.Left);
 				break;
 			case Down:
-				cell = maze[x][y + 1];
+				cell = getNeighbor(Dir.Down);
 				cell.setPrev(Dir.Up);
 				break;
 			default:
@@ -181,12 +198,52 @@ public class Maze {
 			}
 		}
 		
+		/**
+		 * @return true if the cell can be accessed from more than 2 directions
+		 */
+		public boolean isIntersection() {
+			int passTotal = 0;
+			for(boolean pass : passable.values()) {
+				if(pass) passTotal++;
+			}
+			return passTotal > 2;
+		}
+		
+		public Cell getNeighbor(Dir dir) {
+			switch(dir) {
+			case Left:
+				return maze[x - 1][y];
+			case Up:
+				return maze[x][y - 1];
+			case Right:
+				return maze[x + 1][y];
+			default:
+				return maze[x][y + 1];
+			}
+		}
+		
+		public int getX() {
+			return x;
+		}
+		
+		public int getY() {
+			return y;
+		}
+		
 		public int getVal() {
 			return val;
 		}
 		
+		public HashMap<Dir, Boolean> getPassable() {
+			return passable;
+		}
+		
 		public void setVal(int val) {
 			this.val = val;
+		}
+		
+		public void setInPath(boolean inPath) {
+			this.inPath = inPath;
 		}
 		
 		public void setPrev(Dir prev) {
@@ -200,12 +257,14 @@ public class Maze {
 				g.setColor(lastColor);
 			} else if(endCell != null && this == endCell) {
 				g.setColor(endColor);
+			} else if(inPath) {
+				g.setColor(pathColor);
 			} else if(val == 0) {
 				g.setColor(Color.WHITE);
 			} else if(val == -2) {
 				g.setColor(borderColor);
 			} else {
-				g.setColor(backgroundColor);
+				return;
 			}
 			
 			g.fillRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
@@ -214,19 +273,19 @@ public class Maze {
 		public void paintWalls(Graphics g) {
 			if(val == 0) {
 				g.setColor(Color.BLACK);
-				if(!passable[Dir.Left.ordinal()]) {
+				if(!passable.get(Dir.Left)) {
 					g.drawLine(x * cellWidth, y * cellHeight, x * cellWidth, (y + 1) * cellHeight);
 				}
 				
-				if(!passable[Dir.Up.ordinal()]) {
+				if(!passable.get(Dir.Up)) {
 					g.drawLine(x * cellWidth, y * cellHeight, (x + 1) * cellWidth, y * cellHeight);			
 				}
 				
-				if(!passable[Dir.Right.ordinal()]) {
+				if(!passable.get(Dir.Right)) {
 					g.drawLine((x + 1) * cellWidth, y * cellHeight, (x + 1) * cellWidth, (y + 1) * cellHeight);
 				}
 				
-				if(!passable[Dir.Down.ordinal()]) {
+				if(!passable.get(Dir.Down)) {
 					g.drawLine(x * cellWidth, (y + 1) * cellHeight, (x + 1) * cellWidth, (y + 1) * cellHeight);
 				}
 			}

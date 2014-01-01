@@ -2,8 +2,6 @@ Maze Generator and Solver
 ========
 <i>By: Matt Antonelli</i>
 
-========
-
 This Java application was designed to procedurally generate a maze using a randomized implemenation of Prim's Algorithm and solve the maze using the left-hand rule.
 
 The GUI highlights the starting cell in <i>blue</i> and the ending cell in <i>green</i>. While the maze is being calculated, the

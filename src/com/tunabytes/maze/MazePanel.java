@@ -15,7 +15,7 @@ public class MazePanel extends JPanel {
 	
 	private static final int MaxWidth = 40, MaxHeight = 40, CellWidth = 16, CellHeight = CellWidth;
 	private final Color backgroundColor = new Color(63, 68, 71);
-	private boolean isGenerating, isSolving, quickGenerate = false;
+	private boolean isGenerating, isSolving, quickGenerate = true, quickSolve = true;
 	private Timer timer;
 	private Maze maze;
 	private Solver solver;
@@ -33,26 +33,32 @@ public class MazePanel extends JPanel {
 				if(quickGenerate) {
 					long time = System.currentTimeMillis();
 					while(!maze.expand());
-					isGenerating = false;
-					System.out.println((System.currentTimeMillis() - time) + "ms");
+					System.out.println("Generation time: " + (System.currentTimeMillis() - time) + "ms");
 					solver = new Solver(maze);
+					isGenerating = false;
 					isSolving = true;
 				} else {
 					if(maze.expand()) {
 						isGenerating = false;
-						repaint();
 						solver = new Solver(maze);
 						isSolving = true;
 					}
 				}
 			} else if(isSolving) {
-				if(solver.solve()) {
+				if(quickSolve) {
+					long time = System.currentTimeMillis();
+					while(!solver.solve());
+					System.out.println("Solving time: " + (System.currentTimeMillis() - time) + "ms");
 					isSolving = false;
 					repaint();
-					try {
-						Thread.sleep(5000);
-					} catch(InterruptedException e1) {
-						e1.printStackTrace();
+//					try {
+//						Thread.sleep(5000);
+//					} catch(InterruptedException e1) {
+//						e1.printStackTrace();
+//					}
+				} else {
+					if(solver.solve()) {
+						isSolving = false;
 					}
 				}
 			} else {

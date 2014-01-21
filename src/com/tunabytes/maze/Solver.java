@@ -45,6 +45,7 @@ public class Solver {
 		if(nextDir == null) {
 			isBacktracking = true;
 			path.pop().setInPath(false);
+			return false;
 		} else {
 			Cell nextCell = current.getNeighbor(nextDir);
 			nextCell.setInPath(true);

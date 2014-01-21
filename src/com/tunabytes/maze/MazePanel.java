@@ -1,71 +1,64 @@
 package com.tunabytes.maze;
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.Timer;
 
 
 public class MazePanel extends JPanel {
 
 	private static final long serialVersionUID = 1L;
 	
-	private static final int MaxWidth = 40, MaxHeight = 40, CellWidth = 16, CellHeight = CellWidth;
+	private static final int MaxWidth = 160, MaxHeight = 80, CellWidth = 8, CellHeight = CellWidth;
 	private final Color backgroundColor = new Color(63, 68, 71);
-	private boolean isGenerating, isSolving, quickGenerate = true, quickSolve = true;
-	private Timer timer;
+	private boolean quickGenerate = false, quickSolve = false;
 	private Maze maze;
 	private Solver solver;
 	
 	public MazePanel() {
-		timer = new Timer(0, new Update());
-		timer.start();
 	}
 	
-	public class Update implements ActionListener {
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			if(isGenerating) {
-				solver = null;
-				if(quickGenerate) {
-					long time = System.currentTimeMillis();
-					while(!maze.expand());
-					System.out.println("Generation time: " + (System.currentTimeMillis() - time) + "ms");
-					solver = new Solver(maze);
-					isGenerating = false;
-					isSolving = true;
-				} else {
-					if(maze.expand()) {
-						isGenerating = false;
-						solver = new Solver(maze);
-						isSolving = true;
-					}
-				}
-			} else if(isSolving) {
-				if(quickSolve) {
-					long time = System.currentTimeMillis();
-					while(!solver.solve());
-					System.out.println("Solving time: " + (System.currentTimeMillis() - time) + "ms");
-					isSolving = false;
-					repaint();
-//					try {
-//						Thread.sleep(5000);
-//					} catch(InterruptedException e1) {
-//						e1.printStackTrace();
-//					}
-				} else {
-					if(solver.solve()) {
-						isSolving = false;
-					}
-				}
-			} else {
-				maze = new Maze(MaxWidth + 2, MaxHeight + 2, CellWidth, CellHeight);
-				isGenerating = true;
-			}
+	public void buildMaze() {
+		maze = new Maze(MaxWidth + 2, MaxHeight + 2, CellWidth, CellHeight);
+		if(quickGenerate) {
+			long time = System.currentTimeMillis();
+			while(!maze.expand());
 			repaint();
+			System.out.println("Generation time: " + (System.currentTimeMillis() - time) + "ms");
+		} else {
+			while(!maze.expand()) {
+				repaint();
+				try {
+					Thread.sleep(0, 1);
+				} catch(InterruptedException e) {
+					System.exit(1);
+				}
+			}
+		}
+	}
+	
+	public void solveMaze() {
+		solver = new Solver(maze);
+		if(quickSolve) {
+			long time = System.currentTimeMillis();
+			while(!solver.solve());
+			repaint();
+			System.out.println("Solving time: " + (System.currentTimeMillis() - time) + "ms");
+			try {
+				Thread.sleep(1000);
+			} catch(InterruptedException e) {
+				System.exit(1);
+			}
+		} else {
+			while(!solver.solve()) {
+				repaint();
+				try {
+					Thread.sleep(0, 1);
+				} catch(InterruptedException e) {
+					System.exit(1);
+				}
+			}
 		}
 	}
 	
@@ -81,7 +74,8 @@ public class MazePanel extends JPanel {
 	
 	public static void main(String[] args) {
 		JFrame frame = new JFrame();
-		frame.add(new MazePanel());
+		MazePanel panel = new MazePanel();
+		frame.add(panel);
 		frame.setSize(MaxWidth * CellWidth + 2 * CellWidth + 6, 
 				MaxHeight * CellHeight + 2 * CellHeight + 29);
 		frame.setTitle("Maze");
@@ -89,6 +83,15 @@ public class MazePanel extends JPanel {
 		frame.setLocationRelativeTo(null);
 		frame.setResizable(false);
 		frame.setVisible(true);
+		
+		loop(panel);
+	}
+	
+	private static void loop(MazePanel panel) {
+		while(true) {
+			panel.buildMaze();
+			panel.solveMaze();
+		}
 	}
 	
 }

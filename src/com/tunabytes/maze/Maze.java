@@ -8,22 +8,20 @@ public class Maze {
 
 	private ArrayList<Cell> wallCells = new ArrayList<Cell>();
 	private Cell startCell, endCell = null, lastCell;
-	private final Color startColor = new Color(36, 173, 222), endColor = new Color(138, 189, 0), 
-			lastColor = new Color(204, 0, 0), pathColor = new Color(179, 104, 217), 
-			borderColor = new Color(37, 40, 41);
+	private final Color StartColor = new Color(36, 173, 222), EndColor = new Color(138, 189, 0), 
+			LastColor = new Color(204, 0, 0), PathColor = new Color(179, 104, 217);
 	private Random rand = new Random();
 	private Cell[][] maze;
-	private final int cellWidth, cellHeight;
+	private final int CellWidth;
 
 	public enum Dir {
 		Left, Up, Right, Down
 	}
 	
-	public Maze(int width, int height, int cellWidth, int cellHeight) {
-		this.cellWidth = cellWidth;
-		this.cellHeight = cellHeight;
+	public Maze(int width, int height, int cellWidth) {
+		this.CellWidth = cellWidth;
 		
-		maze = new Cell[width][height];
+		maze = new Cell[width + 2][height + 2];	// +2 adds a border to prevent null refs
 		
 		// Defaults all non-border cell values to -1 to show they have not been visited
 		for(int col = 1; col < maze.length - 1; col++) {
@@ -117,7 +115,7 @@ public class Maze {
 	 * Holds a given location in the maze, allowing or easy manipulation of neighboring cells
 	 */
 	class Cell {
-		private final int x, y;
+		private final int x, y, paintX, paintY;
 		private HashMap<Dir, Boolean> passable = new HashMap<Dir, Boolean>();
 		
 		private Dir prev;
@@ -126,7 +124,9 @@ public class Maze {
 		
 		public Cell(int x, int y, int val) {
 			this.x = x;
+			paintX = x * CellWidth;
 			this.y = y;
+			paintY = y * CellWidth;
 			this.val = val;
 			passable.put(Dir.Left, false);
 			passable.put(Dir.Up, false);
@@ -252,41 +252,39 @@ public class Maze {
 		
 		public void paintCell(Graphics g) {
 			if(this == startCell) {
-				g.setColor(startColor);
+				g.setColor(StartColor);
 			} else if(this == lastCell) {
-				g.setColor(lastColor);
+				g.setColor(LastColor);
 			} else if(endCell != null && this == endCell) {
-				g.setColor(endColor);
+				g.setColor(EndColor);
 			} else if(inPath) {
-				g.setColor(pathColor);
+				g.setColor(PathColor);
 			} else if(val == 0) {
 				g.setColor(Color.WHITE);
-			} else if(val == -2) {
-				g.setColor(borderColor);
 			} else {
 				return;
 			}
 			
-			g.fillRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
+			g.fillRect(paintX, paintY, CellWidth, CellWidth);
 		}
 		
 		public void paintWalls(Graphics g) {
 			if(val == 0) {
 				g.setColor(Color.BLACK);
 				if(!passable.get(Dir.Left)) {
-					g.drawLine(x * cellWidth, y * cellHeight, x * cellWidth, (y + 1) * cellHeight);
+					g.drawLine(x * CellWidth, y * CellWidth, x * CellWidth, (y + 1) * CellWidth);
 				}
 				
 				if(!passable.get(Dir.Up)) {
-					g.drawLine(x * cellWidth, y * cellHeight, (x + 1) * cellWidth, y * cellHeight);			
+					g.drawLine(x * CellWidth, y * CellWidth, (x + 1) * CellWidth, y * CellWidth);			
 				}
 				
 				if(!passable.get(Dir.Right)) {
-					g.drawLine((x + 1) * cellWidth, y * cellHeight, (x + 1) * cellWidth, (y + 1) * cellHeight);
+					g.drawLine((x + 1) * CellWidth, y * CellWidth, (x + 1) * CellWidth, (y + 1) * CellWidth);
 				}
 				
 				if(!passable.get(Dir.Down)) {
-					g.drawLine(x * cellWidth, (y + 1) * cellHeight, (x + 1) * cellWidth, (y + 1) * cellHeight);
+					g.drawLine(x * CellWidth, (y + 1) * CellWidth, (x + 1) * CellWidth, (y + 1) * CellWidth);
 				}
 			}
 		}		

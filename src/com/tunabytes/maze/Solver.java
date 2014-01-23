@@ -104,4 +104,13 @@ public class Solver {
 		}
 	}
 	
+	/**
+	 * Clears the solved path from the maze
+	 */
+	public void clearPath() {
+		for(Cell cell : path) {
+			cell.setInPath(false);
+		}
+	}
+	
 }

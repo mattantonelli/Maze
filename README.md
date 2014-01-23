@@ -7,9 +7,9 @@ This Java application was designed to procedurally generate a maze using a rando
 The GUI highlights the starting cell in <i>blue</i> and the ending cell in <i>green</i>. While the maze is being calculated, the
 current cell being checked is highlighted in <i>red</i>.
 
-Quick generating and quick solving can both be enabled manually. Otherwise, each step takes 1ms to calculate and render.
+The user can currently control the width of the cells, and in future implementations will be able to choose different generation and solving algorithms.
 
-	private boolean isGenerating, isSolving, quickGenerate = false, quickSolve = false;
+Quick generating and quick solving can both be enabled for users who do not want to watch the generation and calculating animations.
 
 
 Sample runs:
@@ -17,7 +17,3 @@ Sample runs:
 ![Sample Run 1](http://tunabytes.com/imgdump/maze1.png)
 
 ![Sample Run 2](http://tunabytes.com/imgdump/maze2.png)
-
-![Sample Run 3](http://tunabytes.com/imgdump/maze3.png)
-
-![Sample Run 4](http://tunabytes.com/imgdump/maze4.png)
